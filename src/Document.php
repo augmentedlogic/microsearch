@@ -8,11 +8,8 @@
  **/
 namespace com\augmentedlogic\microsearch;
 
-
 class Document
 {
-
-
     private $doc = null;
 
     function __construct()
@@ -26,12 +23,10 @@ class Document
         $this->doc["text"] = $text;
     }
 
-
     public function setDocId($doc_id)
     {
         $this->doc["doc_id"] = $doc_id;
     }
-
 
     public function setProperty($key, $value)
     {
@@ -40,17 +35,17 @@ class Document
 
     public function getDocId()
     {
-        return $this->doc["doc_id"];
+    return $this->doc["doc_id"];
     }
 
     public function getProperties()
     {
-        return $this->doc["props"];
+    return $this->doc["props"];
     }
 
     public function getText()
     {
-        return $this->doc["text"];
+    return $this->doc["text"];
     }
 
 }

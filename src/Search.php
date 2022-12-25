@@ -19,80 +19,78 @@ class Search
 
     public function loadIndex($path)
     {
-       $this->index_db = unserialize(gzdecode(file_get_contents($path)));
+        $this->index_db = unserialize(gzdecode(file_get_contents($path)));
     }
 
     public function setFuzziness($fuzziness)
     {
-       $this->fuzziness = $fuzziness;
+        $this->fuzziness = $fuzziness;
     }
 
 
     public function doSearch($query)
     {
-      $fuzz = new Fuzz();
-      //print $fuzz->ratio('this is a test', 'this is a test!');
-      //print $fuzz->partialRatio('this is a test', 'this is a test!');
+        $fuzz = new Fuzz();
+        //print $fuzz->ratio('this is a test', 'this is a test!');
+        //print $fuzz->partialRatio('this is a test', 'this is a test!');
 
-      $index = $this->index_db["index"];
-      $docs = $this->index_db["docs"];
-      $results = array();
-      $c = 0;
+        $index = $this->index_db["index"];
+        $docs = $this->index_db["docs"];
+        $results = array();
+        $c = 0;
 
-      $before = 10;
-      $length = 200;
-      $doc_list = array();
+        $before = 10;
+        $length = 200;
+        $doc_list = array();
 
-      foreach($index as $entry) {
+        foreach($index as $entry) {
 
-         if($fuzz->ratio($entry['token'], strtolower($query)) > $this->fuzziness) {
+            if($fuzz->ratio($entry['token'], strtolower($query)) > $this->fuzziness) {
 
-            $start = $entry["pos"] - $before;
-            if($start < 0) {
-               $start = 0;
-            }
+                $start = $entry["pos"] - $before;
+                if($start < 0) {
+                    $start = 0;
+                }
 
             $results[$c] = $entry;
-
             // TODO
             //$docs[$entry["doc_id"]]["text"] = substr_replace($docs[$entry["doc_id"]]["text"], "<b>", $entry["pos"], 0);
             //$docs[$entry["doc_id"]]["text"] = substr_replace($docs[$entry["doc_id"]]["text"], "</b>", $entry["pos"] + strlen($entry['token']) + 3, 0);
             $snippet = substr($docs[$entry["doc_id"]]["text"], $start, 100);
-
 
             //$snippet = str_replace("<b>".$query."</b>", $query, $snippet);
             $results[$c]["snippet"] = $snippet;
             $results[$c]["ratio"] = $fuzz->ratio($entry['token'], strtolower($query));
             //$results[$c]["partial_ratio"] = $fuzz->partialRatio($entry['token'], strtolower($query));
             $c++;
-         }
-      }
+            }
+        }
 
-      usort($results, function($a, $b) {
+        usort($results, function($a, $b) {
           return $b['ratio'] <=> $a['ratio'];
-      });
+        });
 
-      $final_results = array();
-      $final_results["results"] = array();
-      $final_results["query"] = $query;
-      $final_results["docs_searched"] = count($docs);
+        $final_results = array();
+        $final_results["results"] = array();
+        $final_results["query"] = $query;
+        $final_results["docs_searched"] = count($docs);
 
-      foreach($results as $i=>$result) {
-         $result["properties"] = $docs[$result["doc_id"]]["properties"];
+        foreach($results as $i=>$result) {
+            $result["properties"] = $docs[$result["doc_id"]]["properties"];
 
-         // only of "one per doc" is enabled
-         if(!in_array($result["doc_id"], $doc_list)) {
-             $final_results["results"][$i] = $result;
-             $doc_list[] = $result["doc_id"];
-         }
+            // only of "one per doc" is enabled
+            if(!in_array($result["doc_id"], $doc_list)) {
+                $final_results["results"][$i] = $result;
+                $doc_list[] = $result["doc_id"];
+            }
 
 
-      }
+        }
 
-      $final_results["matches"] = count($final_results["results"]);
+        $final_results["matches"] = count($final_results["results"]);
 
-      return $final_results;
-      }
+    return $final_results;
+    }
 
 }
 

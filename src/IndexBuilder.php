@@ -10,7 +10,6 @@ namespace com\augmentedlogic\microsearch;
 
 class IndexBuilder
 {
-
     private $index = array();
     private $docs = array();
     private $db = array();
@@ -39,38 +38,37 @@ class IndexBuilder
 
         for ($x = 1; $x <= $this->max_token_length; $x++) {
 
-          foreach($data as $i=>$d) {
-            $token = $data[$i];
-            switch($x)
-            {
-             case 2:
-                 if(isset($data[$i+1])) {
-                     $token = $data[$i] . " " . $data[$i+1];
-                 }
-             break;
+            foreach($data as $i=>$d) {
+                $token = $data[$i];
+                switch($x)
+                {
+                case 2:
+                    if(isset($data[$i+1])) {
+                        $token = $data[$i] . " " . $data[$i+1];
+                    }
+                break;
 
-             case 3:
-                 if(isset($data[$i+1]) && isset($data[$i+2])) {
-                     $token = $data[$i] . " " . $data[$i+1] . " " . $data[$i+2];
-                 }
-             break;
+                case 3:
+                    if(isset($data[$i+1]) && isset($data[$i+2])) {
+                        $token = $data[$i] . " " . $data[$i+1] . " " . $data[$i+2];
+                    }
+                break;
+                }
+
+                $pos = strpos($text, $token);
+                $poses = $this->strpos_all($text, $token);
+
+                if(isset($counter[base64_encode($token)])) {
+                    $counter[base64_encode($token)]++;
+                } else {
+                    $counter[base64_encode($token)] = 0;
+                }
+
+                $this->docs[$doc->getDocId()] = array("properties" => $doc->getProperties(), "text" => $doc->getText());
+                if(isset($poses[$counter[base64_encode($token)]])) {
+                    $this->index[] = array("doc_id" => $doc->getDocId(), "token" => $token, "pos" => $poses[$counter[base64_encode($token)]]);
+                }
             }
-
-            $pos = strpos($text, $token);
-
-            $poses = $this->strpos_all($text, $token);
-
-            if(isset($counter[base64_encode($token)])) {
-              $counter[base64_encode($token)]++;
-            } else {
-              $counter[base64_encode($token)] = 0;
-            }
-
-            $this->docs[$doc->getDocId()] = array("properties" => $doc->getProperties(), "text" => $doc->getText());
-            if(isset($poses[$counter[base64_encode($token)]])) {
-                $this->index[] = array("doc_id" => $doc->getDocId(), "token" => $token, "pos" => $poses[$counter[base64_encode($token)]]);
-            }
-          }
 
         }
 

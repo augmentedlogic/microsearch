@@ -14,22 +14,22 @@ use FuzzyWuzzy\Process;
 class Search
 {
 
-   private $index_db = null;
-   private $fuzziness = 80;
+    private $index_db = null;
+    private $fuzziness = 80;
 
-   public function loadIndex($path)
-   {
-       $this->index_db = unserialize(file_get_contents($path));
-   }
+    public function loadIndex($path)
+    {
+       $this->index_db = unserialize(gzdecode(file_get_contents($path)));
+    }
 
-   public function setFuzziness($fuzziness)
-   {
+    public function setFuzziness($fuzziness)
+    {
        $this->fuzziness = $fuzziness;
-   }
+    }
 
 
-   public function doSearch($query)
-   {
+    public function doSearch($query)
+    {
       $fuzz = new Fuzz();
       //print $fuzz->ratio('this is a test', 'this is a test!');
       //print $fuzz->partialRatio('this is a test', 'this is a test!');
@@ -52,9 +52,7 @@ class Search
                $start = 0;
             }
 
-
             $results[$c] = $entry;
-
 
             // TODO
             //$docs[$entry["doc_id"]]["text"] = substr_replace($docs[$entry["doc_id"]]["text"], "<b>", $entry["pos"], 0);
@@ -74,20 +72,16 @@ class Search
           return $b['ratio'] <=> $a['ratio'];
       });
 
-      //print_r($results);
-
       $final_results = array();
       $final_results["results"] = array();
       $final_results["query"] = $query;
       $final_results["docs_searched"] = count($docs);
-
 
       foreach($results as $i=>$result) {
          $result["properties"] = $docs[$result["doc_id"]]["properties"];
 
          // only of "one per doc" is enabled
          if(!in_array($result["doc_id"], $doc_list)) {
-             //$final_results["results"][$result["doc_id"]]["found"][] = $result;
              $final_results["results"][$i] = $result;
              $doc_list[] = $result["doc_id"];
          }

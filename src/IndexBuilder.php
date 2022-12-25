@@ -16,8 +16,6 @@ class IndexBuilder
     private $db = array();
     private $max_token_length = 1;
 
-    // to do: add original documents to storage
-
     public function strpos_all($haystack, $needle) {
         $offset = 0;
         $allpos = array();
@@ -35,64 +33,59 @@ class IndexBuilder
 
     public function indexDocument($doc)
     {
+        $text = strtolower($doc->getText());
+        $data = preg_split('/\s+/', strtolower($text));
+        $counter = array();
 
-    $text = strtolower($doc->getText());
-    $data = preg_split('/\s+/', strtolower($text));
-    $counter = array();
+        for ($x = 1; $x <= $this->max_token_length; $x++) {
 
-    for ($x = 1; $x <= $this->max_token_length; $x++) {
+          foreach($data as $i=>$d) {
+            $token = $data[$i];
+            switch($x)
+            {
+             case 2:
+                 if(isset($data[$i+1])) {
+                     $token = $data[$i] . " " . $data[$i+1];
+                 }
+             break;
 
-    foreach($data as $i=>$d) {
-        $token = $data[$i];
-        switch($x)
-        {
-          case 2:
-             if(isset($data[$i+1])) {
-                 $token = $data[$i] . " " . $data[$i+1];
-             }
-          break;
+             case 3:
+                 if(isset($data[$i+1]) && isset($data[$i+2])) {
+                     $token = $data[$i] . " " . $data[$i+1] . " " . $data[$i+2];
+                 }
+             break;
+            }
 
-          case 3:
-              if(isset($data[$i+1]) && isset($data[$i+2])) {
-                  $token = $data[$i] . " " . $data[$i+1] . " " . $data[$i+2];
-              }
-          break;
+            $pos = strpos($text, $token);
+
+            $poses = $this->strpos_all($text, $token);
+
+            if(isset($counter[base64_encode($token)])) {
+              $counter[base64_encode($token)]++;
+            } else {
+              $counter[base64_encode($token)] = 0;
+            }
+
+            $this->docs[$doc->getDocId()] = array("properties" => $doc->getProperties(), "text" => $doc->getText());
+            if(isset($poses[$counter[base64_encode($token)]])) {
+                $this->index[] = array("doc_id" => $doc->getDocId(), "token" => $token, "pos" => $poses[$counter[base64_encode($token)]]);
+            }
+          }
+
         }
 
-        $pos = strpos($text, $token);
-
-        $poses = $this->strpos_all($text, $token);
-
-        if(isset($counter[base64_encode($token)])) {
-          $counter[base64_encode($token)]++;
-        } else {
-          $counter[base64_encode($token)] = 0;
-        }
-
-        $this->docs[$doc->getDocId()] = array("properties" => $doc->getProperties(), "text" => $doc->getText());
-        if(isset($poses[$counter[base64_encode($token)]])) {
-            $this->index[] = array("doc_id" => $doc->getDocId(), "token" => $token, "pos" => $poses[$counter[base64_encode($token)]]);
-        }
     }
-
-    }
-
-    }
-
-
-    // gzencode , gzdecode
 
     public function getIndex()
     {
-      return $this->index;
+    return $this->index;
     }
-
 
     public function saveIndex($path)
     {
-      $this->db["index"] = $this->index;
-      $this->db["docs"] = $this->docs;
-      file_put_contents($path, serialize($this->db));
+        $this->db["index"] = $this->index;
+        $this->db["docs"] = $this->docs;
+        file_put_contents($path, gzencode(serialize($this->db)));
     }
 
 }

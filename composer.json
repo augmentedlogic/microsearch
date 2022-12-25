@@ -1,0 +1,23 @@
+{
+    "name": "augmentedlogic/microsearch",
+    "description": "Minimal embedded full-text search for PHP",
+    "homepage": "https://developer.augmentedlogic.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Wolfgang Hauptfleisch",
+            "email": "dev@augmentedlogic.com"
+        }
+    ],
+    "require": {
+       "php": ">=7.3",
+       "wyndow/fuzzywuzzy": "^0.6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "com\\augmentedlogic\\microsearch\\": "src"
+        }
+    }
+}
+
+

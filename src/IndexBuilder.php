@@ -47,15 +47,18 @@ class IndexBuilder
         switch($x)
         {
           case 2:
-             $token = $data[$i] . " " . $data[$i+1];
+             if(isset($data[$i+1])) {
+                 $token = $data[$i] . " " . $data[$i+1];
+             }
           break;
 
           case 3:
-              $token = $data[$i] . " " . $data[$i+1] . " " . $data[$i+2];
+              if(isset($data[$i+1]) && isset($data[$i+2])) {
+                  $token = $data[$i] . " " . $data[$i+1] . " " . $data[$i+2];
+              }
           break;
         }
 
-        print "{$token}\n";
         $pos = strpos($text, $token);
 
         $poses = $this->strpos_all($text, $token);
@@ -67,7 +70,9 @@ class IndexBuilder
         }
 
         $this->docs[$doc->getDocId()] = array("properties" => $doc->getProperties(), "text" => $doc->getText());
-        $this->index[] = array("doc_id" => $doc->getDocId(), "token" => $token, "pos" => $poses[$counter[base64_encode($token)]]);
+        if(isset($poses[$counter[base64_encode($token)]])) {
+            $this->index[] = array("doc_id" => $doc->getDocId(), "token" => $token, "pos" => $poses[$counter[base64_encode($token)]]);
+        }
     }
 
     }

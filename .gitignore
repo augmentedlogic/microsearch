@@ -1,3 +1,4 @@
 composer.lock
 index.db
 vendor/
+tests/

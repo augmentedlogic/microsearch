@@ -14,12 +14,12 @@ use FuzzyWuzzy\Process;
 class Search
 {
 
-   private $index = null;
+   private $index_db = null;
    private $fuzziness = 80;
 
    public function loadIndex($path)
    {
-       $this->index = unserialize(file_get_contents($path));
+       $this->index_db = unserialize(file_get_contents($path));
    }
 
    public function setFuzziness($fuzziness)
@@ -34,9 +34,8 @@ class Search
       //print $fuzz->ratio('this is a test', 'this is a test!');
       //print $fuzz->partialRatio('this is a test', 'this is a test!');
 
-      $db = unserialize(file_get_contents("index.db"));
-      $index = $db["index"];
-      $docs = $db["docs"];
+      $index = $this->index_db["index"];
+      $docs = $this->index_db["docs"];
       $results = array();
       $c = 0;
 

@@ -16,6 +16,11 @@ class Search
 
     private $index_db = null;
     private $fuzziness = 80;
+    private $match_all = false;
+    private $snippet_length_after = 100;
+    private $snippet_length_before = 50;
+    private $highlight_token = false;
+
 
     public function loadIndex($path)
     {
@@ -26,6 +31,23 @@ class Search
     {
         $this->fuzziness = $fuzziness;
     }
+
+    public function setMatchAll($match_all)
+    {
+        $this->match_all = $match_all;
+    }
+
+    public function setHighlight($highlight_toke)
+    {
+        $this->highlight_token = $highlight_toke;
+    }
+
+    public function setSnippetPadding($before, $after)
+    {
+        $this->snippet_length_before = $before;
+        $this->snippet_length_after = $after;
+    }
+
 
 
     public function doSearch($query)
@@ -39,8 +61,8 @@ class Search
         $results = array();
         $c = 0;
 
-        $before = 10;
-        $length = 200;
+        $before = $this->snippet_length_before;
+        $length = $this->snippet_length_after;
         $doc_list = array();
 
         foreach($index as $entry) {
@@ -53,12 +75,13 @@ class Search
                 }
 
             $results[$c] = $entry;
-            // TODO
-            //$docs[$entry["doc_id"]]["text"] = substr_replace($docs[$entry["doc_id"]]["text"], "<b>", $entry["pos"], 0);
-            //$docs[$entry["doc_id"]]["text"] = substr_replace($docs[$entry["doc_id"]]["text"], "</b>", $entry["pos"] + strlen($entry['token']) + 3, 0);
-            $snippet = substr($docs[$entry["doc_id"]]["text"], $start, 100);
 
-            //$snippet = str_replace("<b>".$query."</b>", $query, $snippet);
+            $snippet = substr($docs[$entry["doc_id"]]["text"], $start, 100);
+            if($this->highlight_token) {
+                 $k = $entry["token"];
+                 $snippet = preg_replace("/\w*?$k\w*/i", "<b>$0</b>", $snippet);
+            }
+
             $results[$c]["snippet"] = $snippet;
             $results[$c]["ratio"] = $fuzz->ratio($entry['token'], strtolower($query));
             //$results[$c]["partial_ratio"] = $fuzz->partialRatio($entry['token'], strtolower($query));
@@ -79,11 +102,17 @@ class Search
             $result["properties"] = $docs[$result["doc_id"]]["properties"];
 
             // only of "one per doc" is enabled
-            if(!in_array($result["doc_id"], $doc_list)) {
-                $final_results["results"][$i] = $result;
-                $doc_list[] = $result["doc_id"];
-            }
+            if($this->match_all) {
+               $final_results["results"][$i] = $result;
 
+            } else {
+
+                if(!in_array($result["doc_id"], $doc_list)) {
+                    $final_results["results"][$i] = $result;
+                    $doc_list[] = $result["doc_id"];
+                }
+
+            }
 
         }
 

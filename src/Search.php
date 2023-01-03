@@ -76,7 +76,7 @@ class Search
 
             $results[$c] = $entry;
 
-            $snippet = substr($docs[$entry["doc_id"]]["text"], $start, 100);
+            $snippet = substr($docs[$entry["doc_id"]]["text"], $start, $length);
             if($this->highlight_token) {
                  $k = $entry["token"];
                  $snippet = preg_replace("/\w*?$k\w*/i", "<b>$0</b>", $snippet);
